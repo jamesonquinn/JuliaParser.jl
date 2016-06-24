@@ -22,6 +22,9 @@ type ParseState
     # in space sensitvie mode "x -y" is 2 exprs, not subtraction
     space_sensitive::Bool
 
+    # in macro sensitive and space sensitive mode, "x @y z" is "@y x z"
+    macro_sensitive::Bool
+
     # treat "end" like a normal symbol, instead of a reserved word
     inside_vector::Bool
 
@@ -32,7 +35,7 @@ type ParseState
     whitespace_newline::Bool
 end
 
-ParseState() = ParseState(true, false, false, false, false)
+ParseState() = ParseState(true, false, false, false, false, false)
 
 peek_token(ps::ParseState, ts::TokenStream)    = Lexer.peek_token(ts, ps.whitespace_newline)
 next_token(ps::ParseState, ts::TokenStream)    = Lexer.next_token(ts, ps.whitespace_newline)
@@ -130,6 +133,24 @@ macro space_sensitive(ps, body)
         finally
             $(esc(ps)).space_sensitive    = tmp1
             $(esc(ps)).whitespace_newline = tmp2
+        end
+    end
+end
+
+macro macro_space_sensitive(macro_sensitive, ps, body)
+    quote
+        local tmp1 = $(esc(ps)).space_sensitive
+        local tmp2 = $(esc(ps)).whitespace_newline
+        local tmp3 = $(esc(ps)).macro_sensitive
+        try
+            $(esc(ps)).space_sensitive = true
+            $(esc(ps)).macro_sensitive = macro_sensitive
+            $(esc(ps)).whitespace_newline = false
+            $(esc(body))
+        finally
+            $(esc(ps)).space_sensitive    = tmp1
+            $(esc(ps)).whitespace_newline = tmp2
+            $(esc(ps)).macro_sensitive    = tmp3
         end
     end
 end
@@ -363,16 +384,17 @@ end
 
 function parse_infix_macro(ps, ts, down=parse_eq, ex = down(ps, ts))
     t = peek_token(ps, ts)
-    if ¬t === '@'
+    if ¬(t === '@' || t == Token('@'))
         take_token(ts)
-        if ps.space_sensitive && ts.isspace && Lexer.peekchar(ts) != ' '
+        if ps.space_sensitive && !ps.macro_sensitive &&
+          ts.isspace && Lexer.peekchar(ts) != ' '
             put_back!(ts, t)
             return ex
         else
             head = parse_unary_prefix(ps, ts)
             name = macroify_name(head)
             ex = ⨳(:macrocall, name ⤄ t) ⪥ (ex,)
-            ex ⪥ parse_space_separated_exprs(ps, ts)
+            ex ⪥ parse_space_separated_exprs(ps, ts, false)
             #OK, done with the leftmost macro. Now keep going RtoL if needed:
             return parse_infix_macro(ps,ts,down,ex)
         end
@@ -1334,15 +1356,17 @@ function parse_iteration_spec(ps, ts, word)
     end
 end
 
-function parse_space_separated_exprs(ps::ParseState, ts::TokenStream)
-    @space_sensitive ps begin
+function parse_space_separated_exprs(ps::ParseState, ts::TokenStream, macro_sensitive=true)
+    @macro_space_sensitive macro_sensitive ps begin
         exprs = Any[]
         while true
             nt = peek_token(ps, ts)
             if is_closing_token(ps, nt) ||
                Lexer.isnewline(¬nt) ||
-               (ps.inside_vector && ¬nt === :for) ||
-               nt == Token('@')
+               (ps.inside_vector && ¬nt === :for)
+                return exprs
+            elseif nt == Token('@')
+                exprs[end] = parse_infix_macro(ps, ts, parse_eq, exprs[end])
                 return exprs
             end
             ex = parse_eq(ps, ts)
