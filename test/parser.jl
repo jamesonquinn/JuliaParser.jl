@@ -284,7 +284,8 @@ facts("test macrocall expression") do
     exprs = [
         "@test",
         "@test 1 2",
-        "@test(a,b)"
+        "@test(a,b)",
+        "@test1 @test2 3",
     ]
     for ex in exprs
         @fact Parser.parse(ex) --> Base.parse(ex)

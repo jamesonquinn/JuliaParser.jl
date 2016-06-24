@@ -1369,7 +1369,7 @@ function parse_space_separated_exprs(ps::ParseState, ts::TokenStream,
                (ps.inside_vector && ¬nt === :for)
                 return exprs
             elseif nt == Token('@')
-                if !macro_sensitive
+                if !macro_sensitive || length(exprs) == 0
                     return exprs
                 else
                     exprs[end] = parse_infix_macro(ps, ts, parse_eq, exprs[end])
