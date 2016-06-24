@@ -373,39 +373,12 @@ function parse_infix_macro(ps, ts, down=parse_eq, ex = down(ps, ts))
             name = macroify_name(head)
             ex = ⨳(:macrocall, name ⤄ t) ⪥ (ex,)
             ex ⪥ parse_space_separated_exprs(ps, ts)
+            #OK, done with the leftmost macro. Now keep going RtoL if needed:
             return parse_infix_macro(ps,ts,down,ex)
         end
     end
     ex
 end
-
-#
-# elseif ¬t === '@'
-#     take_token(ts)
-#     @space_sensitive ps begin
-#         head = parse_unary_prefix(ps, ts)
-#         if (peek_token(ps, ts); ts.isspace)
-#             name = macroify_name(head)
-#             ¬name == Symbol("@__LINE__") && return curline(ts) ⤄ name
-#             ex = ⨳(:macrocall, name ⤄ t)
-#             ex ⪥ parse_space_separated_exprs(ps, ts)
-#             return ex
-#         else
-#             call = parse_call_chain(ps, ts, head, true)
-#             if isexpr(¬call, :call)
-#                 args = collect(children(call))
-#                 ex = ⨳(:macrocall, macroify_name(args[1]) ⤄ t) ⪥ args[2:end]
-#                 return ex
-#             else
-#                 name = macroify_name(call)
-#                 ¬name == Symbol("@__LINE__") && return curline(ts) ⤄ name
-#                 ex = ⨳(:macrocall, name ⤄ t)
-#                 ex ⪥ parse_space_separated_exprs(ps, ts)
-#                 return ex
-#             end
-#         end
-#     end
-
 
 function parse_infix_macros(ps, ts)
   parse_infix_macro(ps, ts, parse_eqs)
