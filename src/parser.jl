@@ -373,7 +373,6 @@ function parse_infix_macro(ps, ts, down=parse_eq, ex = down(ps, ts))
             name = macroify_name(head)
             ex = ⨳(:macrocall, name ⤄ t) ⪥ (ex,)
             ex ⪥ parse_space_separated_exprs(ps, ts)
-            println(ex)
             return parse_infix_macro(ps,ts,down,ex)
         end
     end
@@ -1367,7 +1366,6 @@ function parse_space_separated_exprs(ps::ParseState, ts::TokenStream)
         exprs = Any[]
         while true
             nt = peek_token(ps, ts)
-            println("next:",nt)
             if is_closing_token(ps, nt) ||
                Lexer.isnewline(¬nt) ||
                (ps.inside_vector && ¬nt === :for) ||
