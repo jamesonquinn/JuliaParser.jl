@@ -11,6 +11,8 @@ Differences with Julia's built-in parser
 * Literal negation is done as negated literals rather than using `Expr(:-)`
 * `QuoteNode`s are replaced with `Expr(:quote)`.
 
+* **Infix macros are enabled: `a @b c d`=>`@b a c d`**
+
 Using JuliaParser as your primary parser
 -------------------------------------
 JuliaParser provides a script that will replace the built-in parser by itself.
@@ -68,26 +70,26 @@ julia> Meta.show_sexpr(ast)
   ))
 
 julia> dump(ast)
-Expr 
+Expr
   head: Symbol function
   args: Array(Any,(2,))
-    1: Expr 
+    1: Expr
       head: Symbol call
       args: Array(Any,(2,))
         1: Symbol test
-        2: Expr 
+        2: Expr
           head: Symbol ::
           args: Array(Any,(2,))
           typ: Any
       typ: Any
-    2: Expr 
+    2: Expr
       head: Symbol block
       args: Array(Any,(2,))
-        1: Expr 
+        1: Expr
           head: Symbol line
           args: Array(Any,(2,))
           typ: Any
-        2: Expr 
+        2: Expr
           head: Symbol return
           args: Array(Any,(1,))
           typ: Any
