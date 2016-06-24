@@ -1368,13 +1368,9 @@ function parse_space_separated_exprs(ps::ParseState, ts::TokenStream,
                Lexer.isnewline(¬nt) ||
                (ps.inside_vector && ¬nt === :for)
                 return exprs
-            elseif nt == Token('@')
-                if !macro_sensitive || length(exprs) == 0
-                    return exprs
-                else
-                    exprs[end] = parse_infix_macro(ps, ts, parse_eq, exprs[end])
-                    return exprs
-                end
+            elseif nt == Token('@') && macro_sensitive && length(exprs) > 0
+                exprs[end] = parse_infix_macro(ps, ts, parse_eq, exprs[end])
+                return exprs
             end
             ex = parse_eq(ps, ts)
             if Lexer.isnewline(¬peek_token(ps, ts))
