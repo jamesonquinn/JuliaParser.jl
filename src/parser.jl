@@ -24,7 +24,7 @@ type ParseState
 
     # in macro sensitive and space sensitive mode, "x @y z" is "(@y x z)"
     #   if just space sensitive, it's "x" and then up to the next level of parsing.
-    #   (this is an ugly hack for now; it works differently if a macro has already started than if it hasn't)
+    #   (this is an ugly hack for now; it works differently if a macro has already started than if it hasn't, but it does the right thing, so...)
     macro_sensitive::Bool
 
     # treat "end" like a normal symbol, instead of a reserved word

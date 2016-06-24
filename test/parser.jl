@@ -291,6 +291,19 @@ facts("test macrocall expression") do
     end
 end
 
+facts("test infix macros") do
+    exprs = [
+        "1 @test 2",
+        "1 @test2 2 3 @test 4",
+        "@test 1 2 @test2 @test3",
+    ]
+    for ex in exprs
+        parsed = Parser.parse(ex)
+        @fact parsed.args[1] == Symbol("@test")
+        @fact length(parsed.args) == 3
+    end
+end
+
 facts("test backquote (cmd) expression") do
     exprs = [
         "``",
