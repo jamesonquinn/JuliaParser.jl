@@ -11,7 +11,7 @@ Differences with Julia's built-in parser
 * Literal negation is done as negated literals rather than using `Expr(:-)`
 * `QuoteNode`s are replaced with `Expr(:quote)`.
 
-* **Infix macros are enabled: `a @b c d`=>`@b a c d`**
+* **Infix macros are enabled: `a @b c d`=>`@b a c d`**. See [here](https://github.com/JuliaLang/julia/issues/16985).
 
 Using JuliaParser as your primary parser
 -------------------------------------
