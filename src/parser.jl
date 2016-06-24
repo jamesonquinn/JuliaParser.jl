@@ -22,7 +22,8 @@ type ParseState
     # in space sensitvie mode "x -y" is 2 exprs, not subtraction
     space_sensitive::Bool
 
-    # in macro sensitive and space sensitive mode, "x @y z" is "@y x z"
+    # in macro sensitive and space sensitive mode, "x @y z" is "(@y x z)"
+    #   if just space sensitive, it's "x" and then up to the next level of parsing.
     macro_sensitive::Bool
 
     # treat "end" like a normal symbol, instead of a reserved word
@@ -1356,7 +1357,8 @@ function parse_iteration_spec(ps, ts, word)
     end
 end
 
-function parse_space_separated_exprs(ps::ParseState, ts::TokenStream, macro_sensitive=true)
+function parse_space_separated_exprs(ps::ParseState, ts::TokenStream,
+      macro_sensitive=true)
     @macro_space_sensitive macro_sensitive ps begin
         exprs = Any[]
         while true
